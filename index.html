@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MedTrack - بوابة متابعة المرضى</title>
+    <!-- Google Fonts: Tajawal & Montserrat -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800;900&family=Tajawal:wght@400;500;700;800&display=swap"
+        rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .bell-btn {
+            border-radius: 50%;
+            width: 45px;
+            height: 45px;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid var(--border);
+            background: var(--glass-bg);
+            color: var(--text-main);
+            transition: 0.3s;
+        }
+
+        .bell-btn:hover {
+            color: var(--primary);
+            border-color: var(--primary);
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Top Left Developer/Doctor/Hospital Menu -->
+    <div class="top-corner-menu" id="global-corner-menu">
+        <button class="corner-btn glass-card" id="corner-menu-btn" title="لوحات الإدارة">
+            <i class="fa-solid fa-bars"></i>
+        </button>
+        <div class="corner-dropdown glass-card hidden" id="corner-menu-dropdown">
+            <button class="dropdown-item" onclick="openLoginModal('developer')"><i class="fa-solid fa-code"></i>
+                مطور</button>
+            <button class="dropdown-item" onclick="openLoginModal('doctor')"><i class="fa-solid fa-user-md"></i>
+                طبيب</button>
+            <button class="dropdown-item" style="border-top: 1px solid var(--border); border-radius: 0 0 10px 10px;"
+                onclick="openLoginModal('hospital')"><i class="fa-solid fa-hospital"></i> مستشفى</button>
+        </div>
+        <div class="test-data-box glass-card"
+            style="margin-top:10px; padding:10px; font-size:0.8rem; background:rgba(13,148,136,0.1); border:1px solid var(--primary); text-align:right;">
+            <strong><i class="fa-solid fa-info-circle"></i> بيانات تجريبية:</strong><br>
+            مطور/مستشفى: دخول مباشر<br>
+            طبيب: كود 1234<br>
+            مرضى: 1122 أو 3456
+        </div>
+    </div>
+
+    <!-- Dynamic Glass Modal (Popups for details) -->
+    <div class="modal-overlay hidden" id="dynamic-glass-modal"
+        style="z-index: 10000; align-items: center; justify-content: center; display: flex;">
+        <div class="modal-box glass-card"
+            style="max-width: 650px; width: 95%; max-height:85vh; overflow-y:auto; overflow-x:hidden; position:relative; text-align:right; padding:30px;">
+            <button onclick="closeDynamicModal()" class="btn btn-secondary"
+                style="position:absolute; top:15px; left:15px; padding:5px 15px; border-radius:10px;"><i
+                    class="fa-solid fa-xmark"></i> إغلاق</button>
+            <div id="dynamic-modal-content"></div>
+        </div>
+    </div>
+
+    <!-- Login Modal -->
+    <div class="modal-overlay hidden" id="login-modal">
+        <div class="modal-box glass-card">
+            <i class="fa-solid fa-lock" style="font-size: 3rem; color: var(--primary); margin-bottom: 15px;"></i>
+            <h2 id="modal-title" style="margin-bottom: 25px;">تسجيل الدخول</h2>
+            <div class="input-group">
+                <input type="password" id="modal-secret-code" placeholder="أدخل الكود السري الخاص بك" required
+                    style="text-align: center; letter-spacing: 5px;">
+            </div>
+            <button class="btn btn-primary" id="modal-login-btn" style="width: 100%;">تأكيد الدخول</button>
+            <button class="btn btn-secondary mt-3" style="width: 100%; background: var(--text-muted);"
+                onclick="closeLoginModal()">إلغاء</button>
+        </div>
+    </div>
+
+    <!-- Login Screen (Patient Landing) -->
+    <div id="login-screen" class="screen-box active">
+        <div class="landing-container">
+            <div class="logo-large"><i class="fa-solid fa-staff-snake"></i></div>
+            <h1 class="main-title"
+                style="font-family: 'Montserrat', sans-serif; font-weight: 900; font-size: 3.8rem; letter-spacing: 2px; color: var(--primary); text-shadow: 0 4px 15px rgba(0,0,0,0.05);">
+                MedTrack</h1>
+            <p style="font-size: 1.2rem; color: var(--text-muted); margin-bottom: 40px;">بوابتك الذكية والاحترافية
+                لمتابعة رحلة علاجك بكل أمان وخصوصية</p>
+
+            <div class="glass-card" style="max-width: 500px; margin: 0 auto; padding: 40px;">
+                <h2 style="margin-bottom: 25px;">دخول المريض المسجل</h2>
+                <div class="input-group flex-input" style="display: flex; gap: 15px; margin-bottom: 0;">
+                    <input type="password" id="patient-code-input" placeholder="أدخل الكود السري الخاص بك هنا..."
+                        aria-label="كود المريض">
+                    <button class="btn btn-primary" id="patient-login-btn" style="padding: 0 30px;"><i
+                            class="fa-solid fa-arrow-left"></i> متابعة</button>
+                </div>
+            </div>
+
+            <h2 style="margin-top: 60px; margin-bottom: 20px; font-size: 2rem;">باقات التسجيل الجديدة للمرضى</h2>
+            <div class="pricing-cards">
+                <div class="pricing-card glass-card">
+                    <i class="fa-solid fa-calendar-week card-icon"></i>
+                    <h3>الباقة الأسبوعية</h3>
+                    <div class="price">٥٠٠ <span>ج.م / أسبوعياً</span></div>
+                    <ul class="features">
+                        <li><i class="fa-solid fa-check-circle"></i> متابعة طبية يومية</li>
+                        <li><i class="fa-solid fa-check-circle"></i> استشارة طارئة</li>
+                    </ul>
+                    <a href="https://wa.me/201035919821?text=مرحباً، أود الاشتراك في الباقة الأسبوعية" target="_blank"
+                        class="btn btn-whatsapp-outline" style="width:100%"><i class="fa-brands fa-whatsapp"></i>
+                        للاشتراك</a>
+                </div>
+                <div class="pricing-card glass-card featured">
+                    <div class="badge">الأكثر اختياراً</div>
+                    <i class="fa-solid fa-calendar-days card-icon"></i>
+                    <h3>الباقة الشهرية</h3>
+                    <div class="price">١٥٠٠ <span>ج.م / شهرياً</span></div>
+                    <ul class="features">
+                        <li><i class="fa-solid fa-check-circle"></i> تواصل مستمر</li>
+                        <li><i class="fa-solid fa-check-circle"></i> زيارة أو متابعة شهرية</li>
+                    </ul>
+                    <a href="https://wa.me/201035919821?text=مرحباً، أود الاشتراك في الباقة الشهرية المتكاملة"
+                        target="_blank" class="btn btn-primary" style="width:100%"><i class="fa-brands fa-whatsapp"></i>
+                        للاشتراك</a>
+                </div>
+                <div class="pricing-card glass-card">
+                    <i class="fa-solid fa-calendar-check card-icon"></i>
+                    <h3>الباقة السنوية</h3>
+                    <div class="price">١٢٠٠٠ <span>ج.م / سنوياً</span></div>
+                    <ul class="features">
+                        <li><i class="fa-solid fa-check-circle"></i> رعاية شاملة كاملة</li>
+                        <li><i class="fa-solid fa-check-circle"></i> إدارة ملف متكامل</li>
+                    </ul>
+                    <a href="https://wa.me/201035919821?text=مرحباً، أود الاشتراك في الباقة السنوية" target="_blank"
+                        class="btn btn-whatsapp-outline" style="width:100%"><i class="fa-brands fa-whatsapp"></i>
+                        للاشتراك</a>
+                </div>
+            </div>
+
+            <h2 style="margin-top: 60px; margin-bottom: 20px; font-size: 2rem;">الانضمام للشبكة الطبية</h2>
+            <div class="glass-card" style="padding:40px; margin-bottom:60px; text-align:center;">
+                <h3 style="margin-bottom:15px;"><i class="fa-solid fa-handshake"></i> هل أنت طبيب أو تمثل إدارة مستشفى؟
+                </h3>
+                <p style="color:var(--text-muted); font-size:1.1rem; margin-top:10px;">انضم لشبكتنا المتقدمة وشارك في
+                    تقديم خدماتك الصحية بصورة منظمة واحترافية.</p>
+                <a href="https://wa.me/201035919821?text=MedTrack: أود طلب تسجيل مستشفى جديد / أو طبيب متعاون بالمنصة"
+                    target="_blank" class="btn btn-primary mt-4"
+                    style="padding: 15px 40px; font-size:1.1rem; border-radius:30px;">
+                    <i class="fa-brands fa-whatsapp"></i> تقديم طلب تسجيل رسمي
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Patient Dashboard Screen -->
+    <div id="dashboard-screen" class="screen-box">
+        <nav class="sidebar glass-card">
+            <div class="sidebar-header">
+                <i class="fa-solid fa-staff-snake logo-icon"></i>
+                <h2>MedTrack</h2>
+            </div>
+            <ul class="nav-links">
+                <li class="active" data-tab="doctor-followup"><i class="fa-solid fa-user-doctor"></i> متابعة الطبيب</li>
+                <li data-tab="home-care"><i class="fa-solid fa-house-medical"></i> الرعاية المنزلية</li>
+                <li data-tab="hospital-care"><i class="fa-solid fa-hospital"></i> العلاج بالمستشفى</li>
+                <li data-tab="request-care"><i class="fa-solid fa-calendar-plus"></i> طلب تنسيق</li>
+                <li data-tab="post-care"><i class="fa-solid fa-heart-pulse"></i> المتابعة بعد العلاج</li>
+            </ul>
+            <div class="sidebar-footer">
+                <button class="logout-btn btn btn-danger-outline" style="width:100%;"><i
+                        class="fa-solid fa-right-from-bracket"></i> خروج</button>
+            </div>
+        </nav>
+        <main class="main-content">
+            <header class="top-header glass-card">
+                <div class="user-info">
+                    <div class="avatar"><i class="fa-solid fa-user"></i></div>
+                    <div>
+                        <h3>مرحباً بك</h3>
+                        <p>كود المريض: <span id="display-code"
+                                style="font-weight:700; color:var(--text-main);">---</span></p>
+                        <div id="display-doctor-info" style="margin-top:5px;"></div>
+                    </div>
+                </div>
+                <div style="display:flex; gap:10px; align-items:center;">
+                    <button class="bell-btn" onclick="requestNotification()" title="تفعيل جرس الإشعارات عبر الهاتف"><i
+                            class="fa-solid fa-bell"></i></button>
+                    <a href="https://wa.me/201035919821?text=MedTrack: أريد التحدث مع الدعم الفني للموقع"
+                        target="_blank" class="btn btn-whatsapp">الدعم الفني</a>
+                </div>
+            </header>
+
+            <div class="tab-content-container">
+                <!-- Patient Tabs -->
+                <section id="doctor-followup" class="tab-pane active fade-in">
+                    <div class="section-header">
+                        <h2>متابعة الطبيب والإدارة</h2>
+                    </div>
+                    <div class="doctor-notes glass-card" id="patient-dr-notes"></div>
+                    <div class="action-bar glass-card">
+                        <a id="patient-dr-wa-btn"
+                            href="https://wa.me/201035919821?text=MedTrack: أود التواصل مع الطبيب بخصوص حالتي"
+                            target="_blank" class="btn btn-whatsapp-large"
+                            style="background:var(--primary); box-shadow:none;">
+                            <i class="fa-brands fa-whatsapp"></i> الواتساب للحصول على استشارة الطبيب
+                        </a>
+                    </div>
+                </section>
+
+                <section id="home-care" class="tab-pane fade-in">
+                    <div class="section-header">
+                        <h2>برنامج الرعاية المنزلية</h2>
+                    </div>
+                    <div class="tasks-table glass-card">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>الموعد</th>
+                                    <th>المهمة</th>
+                                    <th>الحالة</th>
+                                </tr>
+                            </thead>
+                            <tbody id="patient-homecare-table"></tbody>
+                        </table>
+                    </div>
+                    <div class="action-bar glass-card">
+                        <a href="https://wa.me/201035919821?text=MedTrack: طلب التواصل بخصوص خطة الرعاية المنزلية"
+                            target="_blank" class="btn btn-primary"
+                            style="padding: 15px 30px; font-size: 1.1rem; width: auto; background:#25d366;">
+                            <i class="fa-brands fa-whatsapp"></i> التواصل مع المسؤول للحصول على استشارة
+                        </a>
+                    </div>
+                </section>
+
+                <section id="hospital-care" class="tab-pane fade-in">
+                    <div class="section-header">
+                        <h2>العلاج بالمستشفى</h2>
+                    </div>
+                    <div class="tasks-timeline glass-card">
+                        <div class="timeline" id="patient-hospital-timeline"></div>
+                    </div>
+                    <div class="action-bar glass-card">
+                        <a href="https://wa.me/201035919821?text=MedTrack: التواصل بخصوص المستشفى وطاقم التمريض الداخلي"
+                            target="_blank" class="btn btn-whatsapp-large">
+                            <i class="fa-brands fa-whatsapp"></i> التواصل مع مسؤول المستشفى وإدارة التمريض
+                        </a>
+                    </div>
+                </section>
+
+                <section id="request-care" class="tab-pane fade-in">
+                    <div class="section-header">
+                        <h2>طلب تنسيقات وخدمات</h2>
+                    </div>
+                    <form id="care-request-form" class="request-form glass-card">
+                        <div class="form-row">
+                            <div class="form-group"><label>توجيه لـ:</label><select id="request-type">
+                                    <option>رعاية منزلية</option>
+                                    <option>مستشفى</option>
+                                </select></div>
+                            <div class="form-group"><label>تاريخ البدء</label><input type="date" id="request-date"
+                                    required></div>
+                        </div>
+                        <div class="form-group"><label>ملاحظات</label><textarea id="request-notes" rows="4"></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-secondary" style="background:#25d366;"><i
+                                class="fa-brands fa-whatsapp"></i> إرسال عبر الواتساب للمسؤول</button>
+                    </form>
+                </section>
+
+                <section id="post-care" class="tab-pane fade-in">
+                    <div class="section-header">
+                        <h2>المتابعة بعد العلاج</h2>
+                    </div>
+                    <div class="tasks-table glass-card">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>الموعد والتكرار</th>
+                                    <th>المطلوب</th>
+                                    <th>حالة الإنجاز</th>
+                                </tr>
+                            </thead>
+                            <tbody id="patient-postcare-table"></tbody>
+                        </table>
+                    </div>
+                    <div class="action-bar glass-card">
+                        <a href="https://wa.me/201035919821?text=MedTrack: أود استشارة مسؤولي النظام بخصوص الأعراض وبعد العلاج"
+                            target="_blank" class="btn btn-whatsapp outline-success"
+                            style="padding:15px; font-size:1rem; border:2px solid #25d366; background:transparent; color:#25d366;">
+                            <i class="fa-brands fa-whatsapp"></i> تواصل مع المسؤول لاستشارة طبية سريعة
+                        </a>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <!-- Admin Dashboard Screen -->
+    <div id="admin-dashboard-screen" class="screen-box">
+        <nav class="sidebar glass-card admin-sidebar">
+            <div class="sidebar-header"><i class="fa-solid fa-user-shield logo-icon"></i>
+                <h2>لوحة المطور</h2>
+            </div>
+            <ul class="nav-links">
+                <li class="active" data-tab="admin-patients"><i class="fa-solid fa-users"></i> <span>الأوامر
+                        والمسارات</span></li>
+                <li data-tab="admin-doctors"><i class="fa-solid fa-user-doctor"></i> <span>الكوادر الطبية</span></li>
+                <li data-tab="admin-messaging"><i class="fa-solid fa-paper-plane"></i> <span>إرسال التعميمات</span></li>
+                <li data-tab="admin-add-entities"><i class="fa-solid fa-plus"></i> <span>تسجيل المنشآت</span></li>
+            </ul>
+            <div class="sidebar-footer"><button class="logout-btn btn btn-danger-outline"
+                    style="width:100%;">خروج</button></div>
+        </nav>
+        <main class="main-content">
+            <header class="top-header glass-card">
+                <div class="user-info">
+                    <div class="avatar admin-avatar" style="background: var(--warning);"><i
+                            class="fa-solid fa-crown"></i></div>
+                    <div>
+                        <h3>مرحباً، المطور (الأدمن)</h3>
+                        <p>التحكم الكامل والواجهة الإدارية</p>
+                    </div>
+                </div>
+                <div><button class="bell-btn" onclick="requestNotification()" title="تفعيل الإشعارات"><i
+                            class="fa-solid fa-bell"></i></button></div>
+            </header>
+
+            <div id="admin-patients" class="tab-pane active fade-in">
+                <div class="section-header">
+                    <h2>قاعدة المرضى وتوجيه المسارات</h2><span id="admin-patient-count"></span>
+                </div>
+                <div class="glass-card" style="padding: 30px;">
+                    <div id="admin-patient-list" style="overflow-x:auto;"></div>
+                </div>
+            </div>
+
+            <div id="admin-doctors" class="tab-pane fade-in">
+                <div class="section-header">
+                    <h2>إدارة الأطباء المسجلين والقوائم</h2><span id="admin-doctor-count"></span>
+                </div>
+                <div class="glass-card" style="padding: 30px; margin-bottom:20px;">
+                    <div id="admin-doctor-list" style="overflow-x:auto;"></div>
+                </div>
+                <div class="glass-card" style="padding: 30px;">
+                    <h3 style="margin-bottom:15px;">المستشفيات المسجلة</h3>
+                    <div id="admin-hospital-list" style="overflow-x:auto;"></div>
+                </div>
+            </div>
+
+            <div id="admin-messaging" class="tab-pane fade-in">
+                <div class="section-header">
+                    <h2>مركز المراسلات العام والإداري</h2>
+                </div>
+                <div class="glass-card" style="padding: 30px;">
+                    <div class="form-row">
+                        <div class="form-group"><label>توجيه الرسالة (التعميم) إلى:</label>
+                            <select id="admin-msg-type">
+                                <option value="doctor" selected>طبيب</option>
+                                <option value="hospital">مستشفى</option>
+                                <option value="patient">مريض (ملاحظة عامة)</option>
+                            </select>
+                        </div>
+                        <div class="form-group"><label>تحديد المُستلم:</label><select id="admin-msg-target"></select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>سجل التعميم / التوجيه الإداري</label>
+                        <textarea id="admin-msg-text" rows="5"
+                            placeholder="اكتب التعميم وسيظهر في قائمة إشعارات المستلم مباشرة..."></textarea>
+                    </div>
+                    <button class="btn btn-primary" onclick="sendAdminMessage()"><i class="fa-solid fa-paper-plane"></i>
+                        إرسال التعميم والنشر الإجباري</button>
+                </div>
+            </div>
+
+            <div id="admin-add-entities" class="tab-pane fade-in">
+                <div class="section-header">
+                    <h2>تسجيل الأطباء والمستشفيات للشبكة</h2>
+                </div>
+                <div class="glass-card" style="padding: 30px; margin-bottom:20px;">
+                    <h3 style="border-bottom:1px solid var(--border); padding-bottom:10px; margin-bottom:15px;"><i
+                            class="fa-solid fa-user-plus"></i> إضافة طبيب معالج جديد</h3>
+                    <div class="form-row">
+                        <div class="form-group"><label>اسم الطبيب (يظهر للمرضى)</label><input type="text"
+                                id="add-doc-name" placeholder="مثال: د. أحمد محمد"></div>
+                        <div class="form-group"><label>الكود السري (للدخول)</label><input type="text" id="add-doc-code"
+                                placeholder="أرقام سرية"></div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group"><label>التخصص</label><input type="text" id="add-doc-spec"></div>
+                        <div class="form-group"><label>أوقات التواجد (مثال: الأحد والثلاثاء 10ص)</label><input
+                                type="text" id="add-doc-avail"></div>
+                        <div class="form-group"><label>رقم هاتف الواتساب</label><input type="text" id="add-doc-phone"
+                                placeholder="2010..."></div>
+                    </div>
+                    <button class="btn btn-primary" onclick="adminAddDoctor()">نشر وتسجيل الطبيب بقاعدة المنصة</button>
+                </div>
+
+                <div class="glass-card" style="padding: 30px;">
+                    <h3 style="border-bottom:1px solid var(--border); padding-bottom:10px; margin-bottom:15px;"><i
+                            class="fa-solid fa-hospital"></i> إضافة منشأة (مستشفى) جديد</h3>
+                    <div class="form-row">
+                        <div class="form-group"><label>اسم المستشفى</label><input type="text" id="add-hosp-name"
+                                placeholder="المستشفى التخصصي..."></div>
+                        <div class="form-group"><label>كود الدخول الإداري</label><input type="text" id="add-hosp-code">
+                        </div>
+                        <div class="form-group"><label>رقم هاتف الواتساب</label><input type="text" id="add-hosp-phone"
+                                placeholder="2010..."></div>
+                    </div>
+                    <button class="btn btn-secondary" onclick="adminAddHospital()">دمج المستشفى وتوثيق العقد</button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Hospital Dashboard Screen -->
+    <div id="hospital-dashboard-screen" class="screen-box">
+        <nav class="sidebar glass-card">
+            <div class="sidebar-header"><i class="fa-solid fa-hospital logo-icon"></i>
+                <h2>لوحة المستشفى</h2>
+            </div>
+            <ul class="nav-links">
+                <li class="active" data-tab="hospital-patients"><i class="fa-solid fa-magnifying-glass"></i> <span>مرضى
+                        الاستقبال</span></li>
+                <li data-tab="hospital-dev-notes"><i class="fa-solid fa-envelope"></i> <span>تعميمات النظام</span></li>
+            </ul>
+            <div class="sidebar-footer"><button class="logout-btn btn btn-danger-outline"
+                    style="width:100%;">خروج</button></div>
+        </nav>
+        <main class="main-content">
+            <header class="top-header glass-card">
+                <div class="user-info">
+                    <div class="avatar" style="background:#0ea5e9; color:white;"><i
+                            class="fa-solid fa-hospital-user"></i></div>
+                    <div>
+                        <h3>إدارة المستشفى</h3>
+                        <p>الاستعلام عن تفاصيل خطط ومسارات المرضى</p>
+                    </div>
+                </div>
+                <div><button class="bell-btn" onclick="requestNotification()" title="تفعيل الإشعارات"><i
+                            class="fa-solid fa-bell"></i></button></div>
+            </header>
+
+            <div id="hospital-patients" class="tab-pane active fade-in">
+                <div class="section-header">
+                    <h2>البحث في قاعدة الأوامر السريرية</h2>
+                </div>
+                <div class="glass-card" style="padding: 30px;">
+                    <div style="margin-bottom:20px;">
+                        <input type="text" id="hospital-patient-search" placeholder="ابحث بالاسم لفلترة الملفات..."
+                            style="width:100%; padding:15px; border-radius:10px;">
+                    </div>
+                    <div id="hospital-patients-render"></div>
+                </div>
+            </div>
+
+            <div id="hospital-dev-notes" class="tab-pane fade-in">
+                <div class="section-header">
+                    <h2>التعميمات الإدارية الواردة للمستشفى</h2>
+                </div>
+                <div class="glass-card" style="padding: 30px;" id="hospital-dev-notes-list">
+                    <!-- Renders dynamically -->
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Doctor Dashboard Screen -->
+    <div id="doctor-dashboard-screen" class="screen-box">
+        <nav class="sidebar glass-card doctor-sidebar">
+            <div class="sidebar-header"><i class="fa-solid fa-stethoscope logo-icon"></i>
+                <h2>طبيبي</h2>
+            </div>
+            <ul class="nav-links">
+                <li class="active" data-tab="doc-report"><i class="fa-solid fa-clipboard-user"></i> <span>كتابة
+                        التقارير</span></li>
+                <li data-tab="doc-appointments"><i class="fa-solid fa-clock"></i> <span>مواعيد تواجدي</span></li>
+                <li data-tab="doc-dev-notes"><i class="fa-solid fa-envelope-open-text"></i> <span>تعميمات النظام</span>
+                </li>
+            </ul>
+            <div class="sidebar-footer"><button class="logout-btn btn btn-danger-outline"
+                    style="width:100%;">خروج</button></div>
+        </nav>
+        <main class="main-content">
+            <header class="top-header glass-card">
+                <div class="user-info">
+                    <div class="avatar"><i class="fa-solid fa-user-md"></i></div>
+                    <div>
+                        <h3>مرحباً، الطبيب</h3>
+                        <p>رفع التقارير المباشرة لملفات المرضى</p>
+                    </div>
+                </div>
+                <div><button class="bell-btn" onclick="requestNotification()" title="تفعيل الإشعارات"><i
+                            class="fa-solid fa-bell"></i></button></div>
+            </header>
+
+            <div id="doc-report" class="tab-pane active fade-in">
+                <div class="section-header">
+                    <h2>توجيه تقرير ملاحظات طبيب التخصص</h2>
+                </div>
+                <div class="glass-card" style="padding: 30px;">
+                    <form id="doctor-report-form">
+                        <div class="form-group" style="max-width: 300px;"><label>كود المريض المُستهدف</label><input
+                                type="text" id="doc-patient-code" required></div>
+                        <div class="form-group"><label>الملاحظات الطبية</label><textarea id="doc-patient-note" rows="5"
+                                required></textarea></div>
+                        <button type="submit" class="btn btn-secondary" style="padding: 12px 30px;"><i
+                                class="fa-solid fa-paper-plane"></i> إرسال للمريض مباشرة</button>
+                    </form>
+                </div>
+            </div>
+
+            <div id="doc-appointments" class="tab-pane fade-in">
+                <div class="section-header">
+                    <h2>أوقات التواجد المعتمدة للمعاينة</h2>
+                </div>
+                <div class="glass-card" style="padding: 30px;">
+                    <div id="doctor-availability-list" style="margin-bottom:30px;"></div>
+                    <div style="display:flex; gap:15px;"><a
+                            href="https://wa.me/201035919821?text=MedTrack: أود التدخل وتعديل أوقاتي" target="_blank"
+                            class="btn btn-primary" style="flex:1;"><i class="fa-brands fa-whatsapp"></i> طلب تعديل
+                            ساعات</a></div>
+                </div>
+            </div>
+
+            <div id="doc-dev-notes" class="tab-pane fade-in">
+                <div class="section-header">
+                    <h2>الصندوق الوارد من المطور وإدارة النظام</h2>
+                </div>
+                <div class="glass-card" style="padding: 30px;" id="doctor-dev-notes-list"></div>
+                <div class="action-bar glass-card" style="margin-top:20px;">
+                    <a href="https://wa.me/201035919821?text=MedTrack: أود تقديم شكوى أو استفسار بخصوص التعميمات الأخيرة"
+                        target="_blank" class="btn btn-secondary"
+                        style="background:var(--warning); color:#000; border:none; padding:15px; font-size:1.1rem;">
+                        <i class="fa-solid fa-triangle-exclamation"></i> إرسال ملاحظات/شكوى للمطور
+                    </a>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+
+</html>
