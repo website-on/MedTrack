@@ -1221,7 +1221,22 @@ td {
     --card-shadow: 0 15px 35px -5px rgba(0, 0, 0, 0.05), 0 8px 12px -6px rgba(0, 0, 0, 0.02);
 }
 
+/* Black Theme Variables */
+:root.black-theme {
+    --background: #000000;
+    --surface: rgba(15, 15, 15, 0.9);
+    --text-main: #ffffff;
+    --text-muted: #a1a1aa;
+    --border: rgba(255, 255, 255, 0.1);
+    --card-shadow: 0 0 30px rgba(0, 0, 0, 0.8);
+}
+
 .light-theme body {
+    background-image: none;
+    background-color: var(--background);
+}
+
+.black-theme body {
     background-image: none;
     background-color: var(--background);
 }
@@ -1231,10 +1246,22 @@ td {
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
 }
 
+.black-theme .glass-card {
+    background: var(--surface);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
 .light-theme input,
 .light-theme textarea {
     background: rgba(255, 255, 255, 0.9);
     color: var(--text-main);
+}
+
+.black-theme input,
+.black-theme textarea {
+    background: rgba(30, 30, 30, 0.8);
+    color: var(--text-main);
+    border-color: rgba(255, 255, 255, 0.1);
 }
 
 .light-theme select {
@@ -1242,8 +1269,18 @@ td {
     color: var(--text-main);
 }
 
+.black-theme select {
+    background: rgba(30, 30, 30, 0.8) !important;
+    color: var(--text-main);
+    border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
 .light-theme .dropdown-item:hover {
     background: rgba(14, 165, 233, 0.1);
+}
+
+.black-theme .dropdown-item:hover {
+    background: rgba(255, 255, 255, 0.1);
 }
 
 .light-theme .accordion-header {
@@ -1295,6 +1332,12 @@ td {
     border-color: rgba(245, 158, 11, 0.3);
 }
 
+.black-theme #theme-toggle-btn {
+    background: rgba(30, 30, 30, 0.8);
+    color: #e2e8f0;
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
 .light-theme #theme-toggle-btn:hover {
     background: #f59e0b;
     color: white;
@@ -1307,4 +1350,9 @@ td {
 .light-theme .patient-cover img#doctor-cover-img[src="logo.jpg"] {
     filter: invert(1) hue-rotate(180deg) brightness(1.1);
     mix-blend-mode: multiply;
+}
+
+.black-theme .blend-logo,
+.black-theme .sidebar-header img {
+    filter: drop-shadow(0 0 10px rgba(56, 189, 248, 0.4));
 }

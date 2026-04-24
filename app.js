@@ -1286,31 +1286,39 @@ document.addEventListener('DOMContentLoaded', () => {
     // Theme Toggler
     const themeToggleBtn = document.getElementById('theme-toggle-btn');
     const themeIcon = document.getElementById('theme-icon');
-    const savedTheme = localStorage.getItem('medtrack_theme');
+    let currentTheme = localStorage.getItem('medtrack_theme') || 'blue';
 
-    if (savedTheme === 'light') {
-        document.documentElement.classList.add('light-theme');
+    function applyTheme(theme) {
+        document.documentElement.classList.remove('light-theme', 'black-theme');
         if (themeIcon) {
-            themeIcon.classList.remove('fa-sun');
-            themeIcon.classList.add('fa-moon');
+            themeIcon.classList.remove('fa-sun', 'fa-moon', 'fa-star');
         }
+
+        if (theme === 'light') {
+            document.documentElement.classList.add('light-theme');
+            if (themeIcon) themeIcon.classList.add('fa-sun');
+        } else if (theme === 'black') {
+            document.documentElement.classList.add('black-theme');
+            if (themeIcon) themeIcon.classList.add('fa-star'); // Stars for Black
+        } else {
+            // Blue theme (default)
+            if (themeIcon) themeIcon.classList.add('fa-moon');
+        }
+        localStorage.setItem('medtrack_theme', theme);
+        currentTheme = theme;
     }
+
+    // Initial Apply
+    applyTheme(currentTheme);
 
     if (themeToggleBtn) {
         themeToggleBtn.addEventListener('click', () => {
-            document.documentElement.classList.toggle('light-theme');
-            if (document.documentElement.classList.contains('light-theme')) {
-                localStorage.setItem('medtrack_theme', 'light');
-                if (themeIcon) {
-                    themeIcon.classList.remove('fa-sun');
-                    themeIcon.classList.add('fa-moon');
-                }
+            if (currentTheme === 'light') {
+                applyTheme('blue');
+            } else if (currentTheme === 'blue') {
+                applyTheme('black');
             } else {
-                localStorage.setItem('medtrack_theme', 'dark');
-                if (themeIcon) {
-                    themeIcon.classList.remove('fa-moon');
-                    themeIcon.classList.add('fa-sun');
-                }
+                applyTheme('light');
             }
         });
     }
