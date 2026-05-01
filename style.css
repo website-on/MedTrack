@@ -1376,3 +1376,10 @@ td {
     filter: drop-shadow(0 0 10px rgba(56, 189, 248, 0.4));
     border-radius: 50%;
 }
+
+/* Force all logos to be circular and without black background */
+img[src*="logo.jpg"],
+.professional-logo {
+    border-radius: 50% !important;
+    mix-blend-mode: screen !important;
+}

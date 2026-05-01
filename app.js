@@ -210,6 +210,9 @@ document.addEventListener('DOMContentLoaded', () => {
             showScreen(hospitalDashboardScreen);
             renderHospitalDashboard();
             return;
+        } else if (role === 'nurse') {
+            alert('قسم التمريض قيد التطوير الداخلي.');
+            return;
         }
         loginModal.classList.remove('hidden');
         document.getElementById('modal-title').innerText = 'تسجيل دخول الطبيب';
@@ -288,10 +291,14 @@ document.addEventListener('DOMContentLoaded', () => {
             const name = document.getElementById('auth-reg-name').value.trim();
             const age = document.getElementById('auth-reg-age').value;
             const gender = document.getElementById('auth-reg-gender').value;
-            const chronicYes = document.getElementById('auth-reg-chronic').value === 'نعم';
-            const chronicDesc = document.getElementById('auth-reg-chronic-desc').value;
-            const allergyYes = document.getElementById('auth-reg-allergy').value === 'نعم';
-            const allergyDesc = document.getElementById('auth-reg-allergy-desc').value;
+            const chronicEl = document.getElementById('auth-reg-chronic');
+            const allergyEl = document.getElementById('auth-reg-allergy');
+            const chronicYes = chronicEl ? chronicEl.value === 'نعم' : false;
+            const chronicDescEl = document.getElementById('auth-reg-chronic-desc');
+            const chronicDesc = chronicDescEl ? chronicDescEl.value : '';
+            const allergyYes = allergyEl ? allergyEl.value === 'نعم' : false;
+            const allergyDescEl = document.getElementById('auth-reg-allergy-desc');
+            const allergyDesc = allergyDescEl ? allergyDescEl.value : '';
 
             const newFreeUser = {
                 id: 'F' + Date.now(), name, email, password: pass, notifications: [],
@@ -527,6 +534,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 showScreen(doctorDashboardScreen);
                 renderDoctorDashboard();
             } else alert('كود الطبيب غير صحيح.');
+        } else if (currentLoginRole === 'nurse') {
+            alert('قسم التمريض قيد التطوير الداخلي.');
+            closeLoginModal();
         }
     }
 
