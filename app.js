@@ -65,6 +65,7 @@ let DB = localStorage.getItem('medtrack_DB') ? JSON.parse(localStorage.getItem('
 };
 if (!DB.bookings) DB.bookings = [];
 if (!DB.freeUsers) DB.freeUsers = [];
+if (!DB.quickConsultations) DB.quickConsultations = [];
 if (DB.patients) {
     const ahmed = DB.patients.find(p => p.id === '1122');
     if (ahmed && !ahmed.packagePlan) { ahmed.packagePlan = 'الباقة الماسية'; localStorage.setItem('medtrack_DB', JSON.stringify(DB)); }
@@ -226,21 +227,25 @@ document.addEventListener('DOMContentLoaded', () => {
         const regForm = document.getElementById('auth-register-form');
 
         if (tab === 'login') {
-            loginBtn.className = 'btn btn-primary';
-            loginBtn.style.background = '';
-            loginBtn.style.color = '';
-            regBtn.className = 'btn btn-secondary';
-            regBtn.style.background = 'var(--surface)';
-            regBtn.style.color = 'var(--text-main)';
+            loginBtn.style.background = 'var(--primary)';
+            loginBtn.style.color = 'white';
+            loginBtn.style.boxShadow = '0 4px 15px rgba(56,189,248,0.3)';
+
+            regBtn.style.background = 'transparent';
+            regBtn.style.color = 'var(--text-muted)';
+            regBtn.style.boxShadow = 'none';
+
             loginForm.classList.remove('hidden');
             regForm.classList.add('hidden');
         } else {
-            regBtn.className = 'btn btn-primary';
-            regBtn.style.background = '';
-            regBtn.style.color = '';
-            loginBtn.className = 'btn btn-secondary';
-            loginBtn.style.background = 'var(--surface)';
-            loginBtn.style.color = 'var(--text-main)';
+            regBtn.style.background = 'var(--primary)';
+            regBtn.style.color = 'white';
+            regBtn.style.boxShadow = '0 4px 15px rgba(56,189,248,0.3)';
+
+            loginBtn.style.background = 'transparent';
+            loginBtn.style.color = 'var(--text-muted)';
+            loginBtn.style.boxShadow = 'none';
+
             regForm.classList.remove('hidden');
             loginForm.classList.add('hidden');
         }
@@ -677,6 +682,87 @@ document.addEventListener('DOMContentLoaded', () => {
     };
     window.closeDynamicModal = () => { dynamicModal.classList.add('hidden'); dynamicModalContent.innerHTML = ''; };
 
+    // Quick Consultation Logic
+    window.openQuickConsultationModal = () => {
+        const html = `
+            <div style="text-align:right;">
+                <h3 style="color:var(--warning); margin-bottom:15px;"><i class="fa-solid fa-bolt"></i> طلب استشارة سريعة طارئة</h3>
+                <div style="background:rgba(251,191,36,0.1); padding:10px; border-right:4px solid var(--warning); margin-bottom:15px; color:var(--text-main); font-size:0.95rem;">
+                    سعر الاستشارة السريعة بسيط: <b>100 ج.م</b> فقط. سيتم توجيهك بأسرع وقت لطبيب متخصص.
+                </div>
+                <form onsubmit="submitQuickConsultForm(event)">
+                    <div class="input-group" style="margin-bottom: 15px;">
+                        <label>الاسم الكامل</label>
+                        <input type="text" id="qc-name" required>
+                    </div>
+                    <div class="input-group" style="margin-bottom: 15px;">
+                        <label>التخصص المطلوب</label>
+                        <input type="text" id="qc-specialty" placeholder="مثال: باطنة، أطفال..." required>
+                    </div>
+                    <div class="input-group" style="margin-bottom: 15px;">
+                        <label>رقم الهاتف للتواصل</label>
+                        <input type="text" id="qc-phone" placeholder="أدخل رقمك للتواصل..." required>
+                    </div>
+                    <div class="form-group" style="margin-bottom: 15px; text-align:right;">
+                        <label style="display:block; margin-bottom:8px; font-weight:500; color:var(--primary);">طريقة الدفع</label>
+                        <select id="qc-payment-method" style="width:100%; padding:15px; border-radius:10px; background:rgba(15,23,42,0.6); color:white; border:2px solid var(--border);" onchange="updateQCPaymentDummy()" required>
+                            <option value="">اختر طريقة الدفع</option>
+                            <option value="فودافون كاش">فودافون كاش</option>
+                            <option value="انستا باي">انستا باي</option>
+                            <option value="حساب بنكي">حساب بنكي</option>
+                        </select>
+                        <div id="qc-payment-dummy" style="margin-top:10px; font-size:0.9rem; color:#34d399;"></div>
+                    </div>
+                    <div class="form-group" style="margin-bottom: 20px; text-align:right;">
+                        <label style="display:block; margin-bottom:8px; font-weight:500; color:var(--primary);">صورة التحويل (يتم رفعه من الجهاز مباشرة)</label>
+                        <input type="file" id="qc-payment-receipt" accept="image/*" style="width:100%; padding:10px; background:transparent;" required>
+                    </div>
+                    <button type="submit" class="btn" style="width:100%; background:var(--warning); color:#000; font-weight:bold; border:none; font-size:1.1rem; padding:15px; border-radius:10px;"><i class="fa-solid fa-paper-plane"></i> إرسال الطلب للمطور</button>
+                </form>
+            </div>
+        `;
+        openDynamicModal(html);
+    };
+
+    window.updateQCPaymentDummy = () => {
+        const p = document.getElementById('qc-payment-method').value;
+        const d = document.getElementById('qc-payment-dummy');
+        if (p === 'فودافون كاش') d.innerHTML = 'الرجاء التحويل (100 ج.م) على الرقم: <b>01099998888</b>';
+        else if (p === 'انستا باي') d.innerHTML = 'الرجاء التحويل (100 ج.م) على الحساب: <b>medtrack@instapay</b>';
+        else if (p === 'حساب بنكي') d.innerHTML = 'حساب التحويل (100 ج.م) رقم: <b>1234567891011</b> (بنك مصر)';
+        else d.innerHTML = '';
+    };
+
+    window.submitQuickConsultForm = (e) => {
+        e.preventDefault();
+        const name = document.getElementById('qc-name').value;
+        const spec = document.getElementById('qc-specialty').value;
+        const phone = document.getElementById('qc-phone').value;
+        const pay = document.getElementById('qc-payment-method').value;
+        const fileInput = document.getElementById('qc-payment-receipt');
+
+        if (fileInput.files && fileInput.files[0]) {
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+                if (!DB.quickConsultations) DB.quickConsultations = [];
+                DB.quickConsultations.push({
+                    id: 'QC' + Date.now(),
+                    name,
+                    specialty: spec,
+                    phone,
+                    paymentMethod: pay,
+                    receipt: ev.target.result,
+                    status: 'pending',
+                    assignedDocId: null
+                });
+                localStorage.setItem('medtrack_DB', JSON.stringify(DB));
+                alert('تم إرسال طلب الاستشارة السريعة بنجاح! سيتم تحويلك لطبيب مختص قريباً.');
+                closeDynamicModal();
+            };
+            reader.readAsDataURL(fileInput.files[0]);
+        }
+    };
+
     // Package Registration specific
     window.openPackageDataModal = (pkgName) => {
         const html = `
@@ -932,6 +1018,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const devNotesContainer = document.getElementById('doctor-dev-notes-list');
         if (devNotesContainer) devNotesContainer.innerHTML = d.developerNotes.length ? d.developerNotes.map(n => `<div class="note-item" style="background:rgba(234, 179, 8, 0.1); border-right:4px solid var(--warning); margin-bottom:15px;"><div style="font-weight:bold; color:var(--text-main); margin-bottom:5px;"><i class="fa-solid fa-user-shield"></i> تعليم إداري:</div><div>${n}</div></div>`).join('') : '<p>لا توجد تعليمات.</p>';
+
+        if (!DB.quickConsultations) DB.quickConsultations = [];
+        const docQc = DB.quickConsultations.filter(qc => qc.assignedDocId === d.id);
+        const docQcList = document.getElementById('doc-urgent-consultations-list');
+        if (docQcList) {
+            docQcList.innerHTML = docQc.length > 0 ? docQc.map(qc => `
+                <div class="glass-card" style="padding:20px; margin-bottom:15px; border-right:4px solid var(--warning); position:relative;">
+                    <div style="position:absolute; top:-10px; left:15px; background:var(--warning); color:#000; font-size:0.8rem; font-weight:bold; padding:3px 10px; border-radius:10px;">عاجل !</div>
+                    <h4 style="color:var(--text-main); margin-bottom:10px;">المريض: ${qc.name}</h4>
+                    <p style="margin:5px 0;">التخصص المطلوب: ${qc.specialty}</p>
+                    <p style="margin:5px 0;">رقم الهاتف للتواصل: <strong style="color:var(--primary); font-size:1.1rem; letter-spacing:1px;">${qc.phone}</strong></p>
+                    <div style="margin-top:15px; text-align:left;">
+                        <a href="https://wa.me/${qc.phone}?text=مرحبا بك، أنا الطبيب المعالج عبر منصة MedTrack للرد على استشارتك العاجلة." target="_blank" class="btn btn-whatsapp"><i class="fa-brands fa-whatsapp"></i> تواصل عبر واتساب الان</a>
+                    </div>
+                </div>
+            `).join('') : '<p>لا توجد استشارات عاجلة محولة لك حالياً.</p>';
+        }
     }
 
     const docReportForm = document.getElementById('doctor-report-form');
@@ -981,6 +1084,43 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                 </div>
             `).join('') : '<p>لا توجد اشتراكات جديدة حالياً.</p>';
+        }
+
+        if (!DB.quickConsultations) DB.quickConsultations = [];
+        const qcContainer = document.getElementById('admin-consultations-list');
+        if (qcContainer) {
+            let pendingQc = DB.quickConsultations.filter(r => r.status === 'pending');
+            qcContainer.innerHTML = pendingQc.length ? pendingQc.map(r => `
+                <div class="glass-card" style="padding:20px; margin-bottom:20px; border-right:4px solid var(--warning);">
+                    <h4>استشارة سريعة: ${r.name}</h4>
+                    <p style="margin:5px 0;">التخصص المطلوب: <strong>${r.specialty}</strong> | رقم الهاتف: <strong>${r.phone}</strong></p>
+                    <p style="margin:5px 0 15px;">طريقة الدفع: <strong style="color:var(--primary);">${r.paymentMethod}</strong>
+                    <button class="btn btn-secondary" onclick="viewFile('${r.receipt}')" style="margin-left:10px; font-size:0.8rem; padding:5px 10px;">عرض صورة التحويل</button></p>
+                    
+                    <div style="background:rgba(15,23,42,0.5); padding:15px; border-radius:10px; border:1px dashed var(--border);">
+                        <h5 style="margin-bottom:10px; color:var(--primary);">توجيه للطبيب المختص:</h5>
+                        <div class="form-row" style="margin-bottom:0; align-items:flex-end;">
+                            <div class="form-group" style="flex:1;">
+                                <label style="font-size:0.9rem;">تحديد التخصص المتاح للطبيب</label>
+                                <select id="qc-spec-${r.id}" onchange="filterAdminQcDocs('${r.id}')" style="padding:10px; width:100%;">
+                                    <option value="">اختر التخصص...</option>
+                                    ${[...new Set(DB.doctors.map(d => d.specialty))].map(s => `<option value="${s}">${s}</option>`).join('')}
+                                </select>
+                            </div>
+                            <div class="form-group" style="flex:1;">
+                                <label style="font-size:0.9rem;">اسم الطبيب</label>
+                                <select id="qc-doc-${r.id}" style="padding:10px; width:100%;">
+                                    <option value="">اختر الطبيب...</option>
+                                    ${DB.doctors.map(d => `<option value="${d.id}">${d.name}</option>`).join('')}
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <button class="btn btn-warning" style="background:var(--warning); color:#000;" onclick="adminAssignQC('${r.id}')">إرسال للطبيب</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('') : '<p>لا توجد استشارات سريعة طارئة جديدة.</p>';
         }
 
         document.getElementById('admin-patient-count').innerText = `إجمالي المرضى: ${DB.patients.length}`;
@@ -1069,6 +1209,27 @@ document.addEventListener('DOMContentLoaded', () => {
                             <p style="font-size:1.1rem; color:white;">تم تأكيد الاشتراك وتم إرسال الكود (${newCode}) لإشعارات المستخدم المجاني.</p>`;
         document.body.appendChild(msgDiv);
         setTimeout(() => msgDiv.remove(), 10000);
+    };
+
+    window.filterAdminQcDocs = (id) => {
+        const spec = document.getElementById(`qc-spec-${id}`).value;
+        const docSelect = document.getElementById(`qc-doc-${id}`);
+        const filteredDocs = DB.doctors.filter(d => spec === '' || d.specialty === spec);
+        docSelect.innerHTML = '<option value="">اختر الطبيب...</option>' + filteredDocs.map(d => `<option value="${d.id}">${d.name}</option>`).join('');
+    };
+
+    window.adminAssignQC = (id) => {
+        const docId = document.getElementById(`qc-doc-${id}`).value;
+        if (!docId) return alert('الرجاء اختيار الطبيب');
+
+        const qc = DB.quickConsultations.find(x => x.id === id);
+        if (qc) {
+            qc.status = 'assigned';
+            qc.assignedDocId = docId;
+            localStorage.setItem('medtrack_DB', JSON.stringify(DB));
+            alert('تم إرسال بيانات المريض للطبيب بنجاح!');
+            renderAdminDashboard();
+        }
     };
 
     window.toggleTaskStatus = (pId, listType, taskId) => {
@@ -1186,8 +1347,12 @@ document.addEventListener('DOMContentLoaded', () => {
                         <p style="margin:5px 0 0; font-size:0.9rem; color:var(--text-muted);">التخصص: ${b.specialty} | اليوم: ${b.date}</p>
                     </div>
                     <div>
-                        <input type="time" id="time-${b.id}" style="padding:5px; border-radius:5px;">
-                        <button class="btn btn-success" style="padding:5px 15px; border-radius:5px; font-size:0.9rem; border:none; background:#34d399; color:white; cursor:pointer;" onclick="approveBooking('${b.id}')"><i class="fa-solid fa-check"></i>تحديد وقت</button>
+                        <div style="display: flex; flex-direction: column; gap: 8px;">
+                            <div class="input-group" style="margin-bottom:0;">
+                                <input type="time" id="time-${b.id}" style="padding:10px; border-radius:8px; border:2px solid var(--border); background:rgba(15,23,42,0.6); color:var(--text-main); font-family:inherit; cursor:pointer;" aria-label="وقت الحجز">
+                            </div>
+                            <button class="btn btn-success" style="padding:8px 15px; border-radius:8px; font-size:0.95rem; border:none; background:#34d399; color:white; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:5px; transition:0.3s;" onmouseover="this.style.background='#1ebc5a'" onmouseout="this.style.background='#34d399'" onclick="approveBooking('${b.id}')"><i class="fa-solid fa-clock"></i> تأكيد الموعد</button>
+                        </div>
                     </div>
                 </div>
             `).join('') : '<p>لا توجد طلبات حجز معلقة.</p>';
